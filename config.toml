@@ -1,0 +1,46 @@
+# Example config file. 
+#
+#
+# The file mainly has three sections.
+# 1. Certificate details
+# 2. SR switch details 
+# 3. Generic Linux server details
+
+# This is a generic config file. Your server or switch details can be placed under the SR switch or servers section for now and it will generate certificates for you anyways. In the future if the script changes, the notification will be placed here. 
+
+
+# Certificate details
+[cert_subject]
+COUNTRY_NAME = "AU"
+STATE_OR_PROVINCE_NAME = "Sydney"
+LOCALITY_NAME = "somelocality"
+ORGANIZATION_NAME = "My Company"
+COMMON_NAME = "common.ca.com"
+VALIDITY_IN_DAYS = 365
+
+
+# Prepare a list of all the switches that needs to be
+
+
+[sr_switches]
+leaf1 = "172.20.20.18"
+leaf2 = "172.20.20.7"
+leaf3 = "172.20.20.15"
+leaf4 = "172.20.20.11"
+leaf5 = "172.20.20.19"
+leaf6 = "172.20.20.12"
+server6 = "172.20.20.14"
+spine1 = "172.20.20.8"
+spine2 = "172.20.20.20"
+supsp1 = "172.20.20.17"
+supsp2 = "172.20.20.5"
+
+[servers]
+grafana = "172.20.20.13"
+influxDB = "172.20.20.4"
+telegraf = "172.20.20.6"
+server1 = "172.20.20.2"
+server2 = "172.20.20.9"
+server3 = "172.20.20.10"
+server4 = "172.20.20.16"
+server5 = "172.20.20.3"
