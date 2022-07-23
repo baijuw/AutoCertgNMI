@@ -25,7 +25,7 @@ PASSWORD = "password"
 # Prepare a list of all the switches that needs to be
 
 
-[sr_switches]
+[switches]
 leaf1 = "172.20.20.18"
 leaf2 = "172.20.20.7"
 leaf3 = "172.20.20.15"

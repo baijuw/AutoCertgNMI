@@ -15,13 +15,13 @@ import os
 config_file = "config.toml"
 T = toml.load(config_file)
 servers = T.get("servers", None)
-sr_switches = T.get("sr_switches", None)
+switches = T.get("switches", None)
 cert_subject = T.get("cert_subject")
 password = T.get("root_key_password")
-if not any((servers, sr_switches)):
+if not any((servers, switches)):
     print(f'''
 
-    Please update the config file {config_file} it is missing the [sr_switches] or [servers] section.
+    Please update the config file {config_file} it is missing the [switches] or [servers] section.
     At least one server or switch is required. 
 
     ''')
@@ -114,7 +114,7 @@ class CertSigner:
 
 if __name__ == "__main__":
     mycert = CertSigner(cert_subject)
-    for host, ip in sr_switches.items():
+    for host, ip in switches.items():
         mycert.client_cert_gen(host, ip)
     for host, ip in servers.items():
         mycert.client_cert_gen(host, ip)
