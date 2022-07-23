@@ -18,6 +18,9 @@ ORGANIZATION_NAME = "My Company"
 COMMON_NAME = "common.ca.com"
 VALIDITY_IN_DAYS = 365
 
+[root_key_password]
+PASSWORD = "password"
+
 
 # Prepare a list of all the switches that needs to be
 

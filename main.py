@@ -6,8 +6,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from pathlib import Path
 import ipaddress
+import os
 
 # Load the configuration file.
 config_file = "config.toml"
@@ -15,6 +17,7 @@ T = toml.load(config_file)
 servers = T.get("servers", None)
 sr_switches = T.get("sr_switches", None)
 cert_subject = T.get("cert_subject")
+password = T.get("root_key_password")
 if not any((servers, sr_switches)):
     print(f'''
 
@@ -27,31 +30,39 @@ if not any((servers, sr_switches)):
 # Class to initialize the CA certificate and also the associated methods.
 class CertSigner:
     def __init__(self, cert_subject):
-        self.subject = self.issuer = x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, cert_subject["COUNTRY_NAME"]),
-            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, cert_subject["STATE_OR_PROVINCE_NAME"]),
-            x509.NameAttribute(NameOID.LOCALITY_NAME, cert_subject["LOCALITY_NAME"]),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, cert_subject["ORGANIZATION_NAME"]),
-            x509.NameAttribute(NameOID.COMMON_NAME, cert_subject["COMMON_NAME"]),
-        ])
-        self.ca_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=backends.default_backend())
-        Path("ca").mkdir(parents=True, exist_ok=True)
-        with open("ca/ca_key.pem", "wb") as f:
-            f.write(self.ca_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.BestAvailableEncryption(b"password"),
-            ))
-        self.ca_cert = x509.CertificateBuilder().subject_name(self.subject) \
-            .issuer_name(self.issuer) \
-            .public_key(self.ca_key.public_key()) \
-            .serial_number(x509.random_serial_number()) \
-            .not_valid_before(datetime.datetime.utcnow()) \
-            .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True) \
-            .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=3650)) \
-            .sign(self.ca_key, hashes.SHA256(), backends.default_backend())
-        with open("ca/ca_cert.pem", "wb") as f:
-            f.write(self.ca_cert.public_bytes(serialization.Encoding.PEM))
+        if os.path.exists("ca/ca_key.pem") and os.path.exists("ca/ca_cert.pem"):
+            print("### Using existing CA artifacts")
+            with open("ca/ca_key.pem", "rb") as f:
+                self.ca_key = load_pem_private_key(f.read(), password=bytes(password["PASSWORD"], encoding='utf8'))
+            with open("ca/ca_cert.pem", "rb") as f:
+                self.ca_cert = x509.load_pem_x509_certificate(f.read())
+        else:
+            self.subject = self.issuer = x509.Name([
+                x509.NameAttribute(NameOID.COUNTRY_NAME, cert_subject["COUNTRY_NAME"]),
+                x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, cert_subject["STATE_OR_PROVINCE_NAME"]),
+                x509.NameAttribute(NameOID.LOCALITY_NAME, cert_subject["LOCALITY_NAME"]),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, cert_subject["ORGANIZATION_NAME"]),
+                x509.NameAttribute(NameOID.COMMON_NAME, cert_subject["COMMON_NAME"]),
+            ])
+
+            self.ca_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=backends.default_backend())
+            Path("ca").mkdir(parents=True, exist_ok=True)
+            with open("ca/ca_key.pem", "wb") as f:
+                f.write(self.ca_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.BestAvailableEncryption(bytes(password["PASSWORD"], encoding='utf8')),
+                ))
+            self.ca_cert = x509.CertificateBuilder().subject_name(self.subject) \
+                .issuer_name(self.issuer) \
+                .public_key(self.ca_key.public_key()) \
+                .serial_number(x509.random_serial_number()) \
+                .not_valid_before(datetime.datetime.utcnow()) \
+                .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True) \
+                .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=3650)) \
+                .sign(self.ca_key, hashes.SHA256(), backends.default_backend())
+            with open("ca/ca_cert.pem", "wb") as f:
+                f.write(self.ca_cert.public_bytes(serialization.Encoding.PEM))
 
     def client_cert_gen(self, host, ip):
         self.key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=backends.default_backend())
