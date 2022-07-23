@@ -90,7 +90,12 @@ class CertSigner:
                 x509.NameAttribute(NameOID.ORGANIZATION_NAME, cert_subject["ORGANIZATION_NAME"]),
                 x509.NameAttribute(NameOID.COMMON_NAME, host),
             ])
-            self.subject_alt_name = [x509.IPAddress(ipaddress.IPv4Address(ip)), x509.DNSName(host)]
+            self.subject_alt_name = [x509.DNSName(host)]
+            if isinstance(ip, list):
+                for i in ip:
+                    self.subject_alt_name.append(x509.IPAddress(ipaddress.IPv4Address(i)))
+            else:
+                self.subject_alt_name.append(x509.IPAddress(ipaddress.IPv4Address(ip)))
             self.csr = x509.CertificateSigningRequestBuilder().subject_name(self.client_subject_name) \
                 .add_extension(x509.SubjectAlternativeName(self.subject_alt_name),
                                critical=False, ).sign(self.key, hashes.SHA256(), backends.default_backend())

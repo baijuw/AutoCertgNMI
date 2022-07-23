@@ -3,10 +3,12 @@
 #
 # The file mainly has three sections.
 # 1. Certificate details
-# 2. SR switch details 
-# 3. Generic Linux server details
+# 2. Switch details
+# 3. Root key password
+# 4. Generic Linux server details
 
-# This is a generic config file. Your server or switch details can be placed under the SR switch or servers section for now and it will generate certificates for you anyways. In the future if the script changes, the notification will be placed here. 
+# This is a generic config file. Your server or switch details can be placed under the switch or servers section
+# and it will generate certificates for you. In the future if the script changes, the notification will be placed here.
 
 
 # Certificate details
@@ -29,8 +31,10 @@ PASSWORD = "password"
 leaf1 = "172.20.20.18"
 leaf2 = "172.20.20.7"
 leaf3 = "172.20.20.15"
-leaf4 = "172.20.20.11"
-leaf5 = "172.20.20.19"
+# for multiple altNames, place IP's as a list within square brackets as shown below.
+# Remember to quote the IP's
+leaf4 = ["172.20.20.11", "172.20.20.200"]
+leaf5 = ["172.20.20.19", "172.20.20.201", "172.20.20.202" ]
 leaf6 = "172.20.20.12"
 server6 = "172.20.20.14"
 spine1 = "172.20.20.8"
