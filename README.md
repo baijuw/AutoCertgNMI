@@ -13,11 +13,11 @@ Once the project is downloaded run the following command to install all the depe
 
 
 # Step 2
-Edit the config.toml file to </p>
+Edit the config.toml file to:- </p>
 
-    1. Update the hostname and IP address under the [switches] and [servers] section for which you want certificates generated.
-    2. Update the [cert_subject] section to add details of the certificate.
-    3. Edit the [root_key_password] section with a strong password to encrypt the root key at rest. Never share this password with anyone.
+   > 1. Update the hostname and IP address under the [switches] and [servers] section for which you want certificates generated.
+   > 2. Update the [cert_subject] section to add details of the certificate.
+   > 3. Edit the [root_key_password] section with a strong password to encrypt the root key at rest. Never share this password with anyone.
 
 **PS:** Followup addition of nodes will not re-create the root key or certificate as long as the artifacts are present in the **ca** directory. The is the case for client certificate and keys too as long as the files still exist in the **client** directory. 
 
